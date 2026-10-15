@@ -140,7 +140,7 @@ DEF[4]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'barsik',x:1210,y:712,h:
   const world=R.pulled?boxSolve(R.pulled)[0]:null;
   for(let lab=0;lab<3;lab++){const[x,y]=this.bx(L,lab);spr('box',x,y,230,{a:L.tried[lab]?.65:1});win('plank',x-104,y+6,208,84);X.font='27px '+FONT;const Ls=wrap(BXT[BX[lab]],170);Ls.forEach((l,k)=>txt(l,x,y+48+(k-(Ls.length-1)/2)*30,27,'#fff0c8',{st:'#2a1004',lw:4}));
    if(L.tried[lab])spr('redx',x+70,y-80,56);
-   if(R.pulled&&lab===2){spr(R.pulled,x,y-150+Math.sin(T*3)*5,80,{glow:1})}
+   if(R.pulled&&lab===2){spr('shadow',x,y-112,20,{a:.5});spr(R.pulled,x,y-170+Math.sin(T*3)*6,110,{glow:1.4})}
    if(L.solved&&world){const c=BX[world[lab]];if(c==='mix'){spr('cones',x-30,y-130,70);spr('acorns',x+30,y-130,70)}else if(lab!==2)spr(c,x,y-135,80)}
    if(L.solved&&!world&&lab===2)spr('tick',x+70,y-80,60)}},
  tap(L,x,y){if(L.solved)return;for(let lab=0;lab<3;lab++){const[bx,by]=this.bx(L,lab);if(Math.abs(x-bx)<100&&Math.abs(y-by)<110&&!L.tried[lab]){run(()=>this.pick(L,lab));return}}},
