@@ -77,10 +77,14 @@ function stepParticles(){for(let i=PS.length-1;i>=0;i--){const p=PS[i];p.life-=p
 function vis(){return{x0:-OX/S,y0:-OY/S,w:W/S,h:H/S}}
 // фон: картинка заполняет весь видимый экран (cover), без размытых полей
 function bgScale(){const v=vis();return Math.max(v.w/1280,v.h/720)}
-function bgXY(px,py){const s=bgScale(),ox=Math.sin(T*.21)*2,oy=Math.cos(T*.17)*1.5;return[640*(1-s)+px*s+ox,360*(1-s)+py*s+oy]}
-function bgDraw(n,dim,scroll){const v=vis(),s=bgScale(),mx=(PX-640)/640,my=(PY-360)/360;
+// фон прижат к низу экрана (cover): нарисованная земля всегда видна; герои стоят на линии земли GROUND (y в пикселях картинки 1280x720)
+function bgY0(){const v=vis();return v.y0+v.h-720*bgScale()}
+function bgXY(px,py){const s=bgScale(),ox=Math.sin(T*.21)*2;return[640*(1-s)+px*s+ox,bgY0()+py*s]}
+const GROUND={title:700,l1:700,l2:700,l3:698,l4:688,l5:712};let BGN='title',GND=[];
+function gY(py){return bgY0()+(py==null?GROUND[BGN]:py)*bgScale()}
+function bgDraw(n,dim,scroll){const v=vis(),s=bgScale(),mx=(PX-640)/640;BGN=n;
  const b=IM['bg_'+n];
- if(b&&b.complete&&b.naturalWidth){const ox=-mx*4+Math.sin(T*.21)*2,oy=-my*3+Math.cos(T*.17)*1.5;X.drawImage(b,640-640*s+ox,360-360*s+oy,1280*s,720*s)}
+ if(b&&b.complete&&b.naturalWidth){const ox=-mx*4+Math.sin(T*.21)*2;X.drawImage(b,640-640*s+ox,bgY0(),1280*s,720*s)}
  if(dim){X.fillStyle=`rgba(8,4,24,${dim})`;X.fillRect(v.x0,v.y0,v.w,v.h)}
  const g=X.createRadialGradient(640,360,300,640,360,900);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(20,8,0,.35)');X.fillStyle=g;X.fillRect(v.x0,v.y0,v.w,v.h)}
 // ---- рисование ----
@@ -109,7 +113,7 @@ function separate(){const L=cast.slice().sort((a,b)=>a.x-b.x);for(let it=0;it<6;
  for(let i=1;i<L.length;i++){const a=L[i-1],b=L[i],need=(heroW(a)+heroW(b))/2+HERO_GAP,d=b.x-a.x;if(d<need){const k=(need-d)/2;a.x-=k;b.x+=k;moved=true}}
  const v=vis(),si=(typeof SAFE!=='undefined'?SAFE.l/Math.max(S,.01):0),safe=Math.max(si+8,16);
  for(const c of L){const hw=heroW(c)/2;c.x=clamp(c.x,v.x0+safe+hw,v.x0+v.w-safe-hw)}if(!moved)break}}
-function drawCast(){cast.forEach(heroFit);separate();cast.forEach(drawHero)}
+function drawCast(){cast.forEach(c=>{c.y=gY()});cast.forEach(heroFit);separate();cast.forEach(drawHero)}
 // ---- сцены ----
 const SC={};let scene='title',SCN=null;
 function go(n,arg){try{if(typeof LV!=='undefined'&&LV&&n!=='secret'&&n!=='l'+LV.n)LV.resume=false}catch(e){}scene=n;SCN=SC[n];fade=1;stopTalk();PS.length=0;SCN.enter&&SCN.enter(arg)}
@@ -123,7 +127,7 @@ const TOUCH=(('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia
 function loop(now){DT=PORTRAIT()?0:clamp((now-last)/1000,0,.05);last=now;T+=DT;fpsA=fpsA*.95+(1/Math.max(DT,.001))*.05;
  X.setTransform(DPR,0,0,DPR,0,0);X.clearRect(0,0,W,H);
  const sx=(Math.random()-.5)*shake,sy=(Math.random()-.5)*shake;shake*=Math.pow(.004,DT);if(shake<.3)shake=0;
- X.setTransform(DPR*S,0,0,DPR*S,DPR*(OX+sx),DPR*(OY+sy));PUI=UI;UI=[];frameBoxes();if(G.auditReq){G.auditReq=0;AUD={t:[],c:[],h:[]};G._aud=AUD}else AUD=null;stepParticles();
+ X.setTransform(DPR*S,0,0,DPR*S,DPR*(OX+sx),DPR*(OY+sy));PUI=UI;UI=[];frameBoxes();GND=[];if(G.auditReq){G.auditReq=0;AUD={t:[],c:[],h:[]};G._aud=AUD}else AUD=null;stepParticles();
  try{SCN&&SCN.draw()}catch(e){console.error(e)}
  drawParticles();if(SCN&&SCN.ui)SCN.ui();fsButton();drawTalk();
  if(fade>0){const v=vis();X.fillStyle=`rgba(8,4,20,${fade})`;X.fillRect(v.x0,v.y0,v.w,v.h);fade=Math.max(0,fade-DT*2.5)}
@@ -141,10 +145,12 @@ G.go=n=>go(n);G.S=SV;G.pg=(x,y)=>({x:OX+x*S,y:OY+y*S});G.btns=()=>UI.map(b=>({id
 
 function loadFrac(){const n=LOADQ.filter(i=>i.src).length||1,d=LOADQ.filter(i=>i.src&&(i.complete)).length;return Math.min(1,d/n)}
 SC.load={draw(){const v=vis();const g=X.createLinearGradient(0,v.y0,0,v.y0+v.h);g.addColorStop(0,'#f6d79a');g.addColorStop(1,'#c9853a');X.fillStyle=g;X.fillRect(v.x0,v.y0,v.w,v.h);
- const tb=IM.bg_title;if(tb&&tb.complete&&tb.naturalWidth){X.globalAlpha=.55;const s=Math.max(v.w/1280,v.h/720);X.drawImage(tb,640-640*s,360-360*s,1280*s,720*s);X.globalAlpha=1}
+ const tb=IM.bg_title;if(tb&&tb.complete&&tb.naturalWidth){X.globalAlpha=.55;const s=Math.max(v.w/1280,v.h/720);X.drawImage(tb,640-640*s,v.y0+v.h-720*s,1280*s,720*s);X.globalAlpha=1}
  const f=loadFrac(),fs=Math.max(40,24/S);X.font=fs+'px '+(FONTOK?FONT:'serif');X.textAlign='center';X.textBaseline='middle';X.lineWidth=fs*.14;X.strokeStyle='#5a2a0a';X.fillStyle='#fff3d6';X.strokeText('Ярмарка подсказок',640,300);X.fillText('Ярмарка подсказок',640,300);
  const bw=Math.min(760,v.w-80),bh=Math.max(26,16/S),bx=640-bw/2,by=390;X.fillStyle='rgba(40,20,8,.55)';X.beginPath();X.roundRect(bx-4,by-4,bw+8,bh+8,(bh+8)/2);X.fill();X.fillStyle='#ffcf4a';X.beginPath();X.roundRect(bx,by,Math.max(bh,bw*f),bh,bh/2);X.fill();
  X.font=Math.max(26,15/S)+'px '+(FONTOK?FONT:'serif');X.fillStyle='#fff3d6';X.strokeText('Загрузка… '+Math.round(f*100)+'%',640,by+bh+Math.max(40,22/S));X.fillText('Загрузка… '+Math.round(f*100)+'%',640,by+bh+Math.max(40,22/S))}};
 function startGame(){scene='load';SCN=SC.load;fade=0;requestAnimationFrame(loop);
  (document.fonts&&document.fonts.load?Promise.race([document.fonts.load('40px '+FONT),new Promise(r=>setTimeout(r,6000))]):Promise.resolve()).then(()=>{FONTOK=true});
  const chk=()=>{const t=performance.now()-LOADT0;if((loadFrac()>=1&&FONTOK&&t>500)||t>25000){LOADED=true;go('title')}else setTimeout(chk,100)};chk()}
+
+G.gnd=()=>({S,v:vis(),scene,items:GND});

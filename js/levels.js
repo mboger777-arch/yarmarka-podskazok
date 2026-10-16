@@ -82,7 +82,7 @@ function endPanel(n){win('plaque',330,110,620,420);ink(n<5?'Дело раскр�
  if(n<5)btn('next',770,600,220,70,'Дальше ›',()=>go('l'+(n+1)),{always:1,pulse:1});else btn('fin',770,600,220,70,'Финал ›',()=>go('fin'),{always:1,pulse:1})}
 // ---------- общие рисовалки ----------
 function tok(n,x,y,h,o){o=o||{};const i=UA[n]&&okI(UA[n])?UA[n]:IM[n];if(!okI(i))return;const w=h*i.naturalWidth/i.naturalHeight;X.save();X.translate(x,y);if(o.sc)X.scale(o.sc,o.sc);if(o.a!=null)X.globalAlpha*=o.a;
- if(o.glow){X.save();X.globalCompositeOperation='lighter';X.globalAlpha*=.3*o.glow;X.drawImage(i,-w*.56,-h*1.04,w*1.12,h*1.08);X.restore()}X.drawImage(i,-w/2,-h,w,h);X.restore();return w}
+ if(o.glow){X.save();X.globalCompositeOperation='lighter';X.globalAlpha*=.3*o.glow;X.drawImage(i,-w*.56,-h*1.04,w*1.12,h*1.08);X.restore()}X.drawImage(i,-w/2,-h,w,h);X.restore();if(o.gl!=null){const k=o.sc||1;GND.push({n,x,feet:y,gls:[o.gl],w:w*k,h:h*k,nr:i.naturalWidth/i.naturalHeight})}return w}
 function clueBox(L,P,y0){const n=P.clues.length,lh=38,h=n*lh+92,x=250,w=780;win('sign',x,y0,w,h,false,'clues');
  P.clues.forEach((c,i)=>{const y=y0+h*.505-(n-1)*lh/2+i*lh;const st=L.cst&&L.cst[i];ink((i+1)+'. '+c.t,x+w/2+(st!=null?18:0),y,26,{col:'#4a2208'});if(st!=null){X.save();X.font='27px '+FONT;const tw=X.measureText((i+1)+'. '+c.t).width;X.restore();spr(st?'tick':'redx',x+w/2+18-tw/2-30,y,36)}})}
 function nameTag(n,x,y,fs){X.font=(fs||22)+'px '+FONT;const w=Math.max(110,X.measureText(PN[n]).width+44);win('plank',x-w/2,y-20,w,40);txt(PN[n],x,y,fs||22,'#fff0c8',{st:'#2a1004',lw:4})}
@@ -90,11 +90,11 @@ function nameTag(n,x,y,fs){X.font=(fs||22)+'px '+FONT;const w=Math.max(110,X.mea
 function assignLevel(n,o){DEF[n]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'nika',x:1215,y:712,h:240}]},
  setR(L){L.P=o.P[L.r];L.pos={};L.sel=null;L.cst=null;L.banner=null;L.solved=false},
  async start(L){this.setR(L);await say(o.intro);await say(L.P.k)},
- slotXY(i){return[o.sx[i],o.sy]},trayXY(j){return[470+j*170,640]},
+ slotXY(i){return[o.sx[i],o.sy]},trayXY(j){return[470+j*170,gY(640)]},
  draw(L){const P=L.P;if(!P)return;clueBox(L,P,96);
   for(let i=0;i<3;i++){const[x,y]=this.slotXY(i);o.drawSlot(i,x,y,L)}
   P.who.forEach((w,j)=>{const s=L.pos[w];let x,y,h;if(s!=null){[x,y]=this.slotXY(s);y+=o.py;h=118}else{[x,y]=this.trayXY(j);h=140}
-   const sel=L.sel===w;tok(w,x,y-(sel?8+Math.sin(T*6)*4:0),h,{glow:sel?1.4:0});if(s==null)nameTag(w,x,y+20,20)})},
+   const sel=L.sel===w;tok(w,x,y-(sel?8+Math.sin(T*6)*4:0),h,{glow:sel?1.4:0,gl:s==null&&!sel?gY(640):null});if(s==null)nameTag(w,x,y+20,20)})},
  tap(L,x,y){if(L.solved)return;const P=L.P;
   for(let j=0;j<3;j++){const w=P.who[j];const s=L.pos[w];let[tx,ty]=s!=null?this.slotXY(s):this.trayXY(j);if(s!=null)ty+=o.py;if(Math.abs(x-tx)<70&&y>ty-140&&y<ty+30){SFX.click();L.sel=L.sel===w?null:w;L.cst=null;return}}
   for(let i=0;i<3;i++){const[sx,sy]=this.slotXY(i);if(Math.abs(x-sx)<o.sw/2&&Math.abs(y-sy)<o.sh/2){if(!L.sel){run(()=>say('pick'));return}
@@ -120,9 +120,9 @@ DEF[2]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'nika',x:1215,y:712,h:24
  async start(L){this.setR(L);await say('l2i');await say(L.P.k)},
  draw(L){const P=L.P;if(!P)return;win('pryanik',310,90,660,100,false,'clues');ink(P.q,640,140,26,{col:'#4a2208'});
   P.who.forEach((w,i)=>{const x=SX2[i];win('bubble',x-108,194,216,150,i===2,'stmt');X.font='26px '+FONT;const Ls=[PN[w]+':',...wrap('«'+P.say[i]+'»',170)];Ls.forEach((l,k)=>txt(l,x,254+(k-(Ls.length-1)/2)*29,k?25:23,k?'#2a1004':'#8a3a0a',{st:'rgba(255,244,220,.7)',lw:3}));
-   const tr=L.tried[w];tok(w,x,590,200,{a:tr?.6:1,glow:L.solved&&i===liarSol(P)[0]?1.4:0});if(tr)spr('redx',x+56,420,60);if(L.solved&&i===liarSol(P)[0])spr('tick',x+56,420,64)});
+   const tr=L.tried[w];tok(w,x,gY(590),200,{gl:gY(590),a:tr?.6:1,glow:L.solved&&i===liarSol(P)[0]?1.4:0});if(tr)spr('redx',x+56,420,60);if(L.solved&&i===liarSol(P)[0])spr('tick',x+56,420,64)});
   if(L.P.ev)spr(L.P.ev,1010,560,90)},
- tap(L,x,y){if(L.solved)return;const P=L.P;P.who.forEach((w,i)=>{if(Math.abs(x-SX2[i])<85&&y>380&&y<620&&!L.tried[w])run(()=>this.pick(L,i))})},
+ tap(L,x,y){if(L.solved)return;const P=L.P;P.who.forEach((w,i)=>{if(Math.abs(x-SX2[i])<85&&y>gY(590)-220&&y<gY(590)+30&&!L.tried[w])run(()=>this.pick(L,i))})},
  async pick(L,i){const P=L.P;const g=liarSol(P)[0];if(i!==g){L.mist++;L.tried[P.who[i]]=1;SFX.bad();oops('lyova');banner(P.why[i],true);await say('l2w');return}
   L.solved=true;L.banner=null;SFX.ok();cheer();burst(SX2[i],420,30,'spark',48);banner(P.ok,false);await say('ok');await wait(1600);L.banner=null;if(!await roundDone()){this.setR(L);await say(L.P.k)}},
  async hint(L){L.reveal=true;await say('l2h')},
@@ -198,7 +198,7 @@ SC.fin={enter(){cast=[{n:'lyova',x:200,y:705,h:340},{n:'nika',x:900,y:705,h:300}
  draw(){bgDraw('title',.05);motes(45);if(Math.random()<.2)burst(rnd(100,1180),rnd(80,300),8,'spark',48,.6);if(Math.random()<.01)cheer();
   win('sign',330,10,620,150);ink('Все дела раскрыты!',640,85,46,{col:'#7a3a0a'});const st=SV.stars.reduce((a,b)=>a+b,0);
   win('plank',340,166,600,66);txt('Звёзд: '+st+' из 15 · тайных: '+SV.secret.reduce((a,b)=>a+b,0)+' из 4',640,199,24,'#fff0c8',{st:'#2a1004',lw:4});
-  ['bear','bunny','owl'].forEach((w,i)=>tok(w,470+i*130,560+Math.abs(Math.sin(T*3+i))*-14,150));drawCast()},
+  ['bear','bunny','owl'].forEach((w,i)=>{const hp=Math.abs(Math.sin(T*3+i))*14;tok(w,470+i*130,gY(688)-hp,150,hp<.5?{gl:gY(688)}:{})});drawCast()},
  ui(){btn('map',1150,60,160,60,'Карта',()=>go('map'),{always:1,fs:28})}};
 // ---------- API для тестов ----------
 G.info=()=>LV&&scene[0]==='l'?LV.def.info(LV):scene==='secret'?{sec:SEC.i,a:SECRETS[SEC.i].a}:{};

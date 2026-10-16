@@ -17,14 +17,16 @@ function swing(n){const c=cast.find(c=>c.n===n);if(c){c.fid='hop';c.fid0=T}}
 function drawHero(c){const im=IM[c.n],R=RIG[c.n]||{head:{r:[0,0,1,.001],p:[.5,.5]},parts:[]};if(!okI(im))return;const ph=c.x*.013;const talking=talk&&talk.who===c.n;
  if(!c.fidT)c.fidT=T+rnd(3,7);if(T>c.fidT&&!c.fid){c.fid={lyova:'sway',nika:'hop',barsik:Math.random()<.5?'flap':'hop'}[c.n]||'sway';c.fid0=T}
  if(c.fid){c.fidK=(T-c.fid0)/1.2;if(c.fidK>=1){c.fid=null;c.fidT=T+rnd(4,8)}}
- let sy=1+Math.sin(T*2.2+ph)*.022,sx=1-Math.sin(T*2.2+ph)*.012,dy=0,rot=Math.sin(T*1.3+ph)*.012;
+ // дыхание — только равномерный масштаб (пропорции спрайта не меняются), опора — ступни; прыжки начинаются и заканчиваются на земле
+ const br=1+Math.sin(T*2.2+ph)*.008;let dy=0,rot=Math.sin(T*1.3+ph)*.012;
  if(c.fid==='hop'){const k=c.fidK;dy-=Math.abs(Math.sin(k*Math.PI*2))*14}
  if(c.fid==='sway')rot+=Math.sin(c.fidK*Math.PI*2)*.05;
- if(c.fid==='flap'){sy+=Math.sin(c.fidK*Math.PI*6)*.02*(1-c.fidK);dy-=Math.sin(c.fidK*Math.PI)*10}
- if(c.jump&&T>c.jump&&T-c.jump<.75){const u=(T-c.jump)/.75;if(u<.15){sy-=.12*(u/.15);sx+=.08*(u/.15)}else if(u<.85){const k=(u-.15)/.7;dy-=Math.sin(k*Math.PI)*70;sy+=.08*Math.sin(k*Math.PI);sx-=.05*Math.sin(k*Math.PI)}else{const k=(u-.85)/.15;sy-=.1*(1-k);sx+=.07*(1-k)}}
+ if(c.fid==='flap'){dy-=Math.sin(c.fidK*Math.PI)*10}
+ if(c.jump&&T>c.jump&&T-c.jump<.75){const u=(T-c.jump)/.75;dy-=Math.sin(u*Math.PI)*70}
  const puz=c.wob&&T-c.wob<1.6?1-(T-c.wob)/1.6:0;
- const hit=c.hit&&T-c.hit<1?1-(T-c.hit):0;if(hit){sy-=.12*hit*Math.abs(Math.sin((T-c.hit)*14));sx+=.06*hit;rot+=Math.sin((T-c.hit)*16)*.07*hit}
- const h=c.h,w=h*im.width/im.height;
+ const hit=c.hit&&T-c.hit<1?1-(T-c.hit):0;if(hit){rot+=Math.sin((T-c.hit)*16)*.07*hit}
+ const sx=br,sy=br;
+ const h=c.h,w=h*im.naturalWidth/im.naturalHeight;GND.push({n:c.n,hero:1,x:c.x,feet:c.y,gl:c.y,gls:[gY()],w:w*sx,h:h*sy,nr:im.naturalWidth/im.naturalHeight});
  const lk=G.look||{x:PX,y:PY};const dir=clamp((lk.x-c.x)/600,-1,1)*(c.flip?-1:1);
   let headA=dir*.05+Math.sin(T*.9+ph)*.02+puz*.15*Math.sin(Math.min(1,(1-puz)*8)*1.57)+(talking?Math.sin((T-talk.t0)*3.3)*.025:0);
  if(c.mood==='laugh'&&T-c.moodT<1.5)headA+=Math.sin(T*28)*.05;
