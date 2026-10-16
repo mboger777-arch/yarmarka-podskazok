@@ -133,7 +133,7 @@ function loop(now){DT=PORTRAIT()?0:clamp((now-last)/1000,0,.05);last=now;T+=DT;f
 let rotT=0;function drawRotate(){rotT+=1/60;X.setTransform(DPR,0,0,DPR,0,0);const tb=IM.bg_title;if(tb&&tb.complete&&tb.naturalWidth){const k=Math.max(W/tb.naturalWidth,H/tb.naturalHeight)*1.08,dx=Math.sin(rotT*.3)*W*.02;X.save();X.filter='blur(3px) brightness(.8)';X.drawImage(tb,W/2-tb.naturalWidth*k/2+dx,H/2-tb.naturalHeight*k/2,tb.naturalWidth*k,tb.naturalHeight*k);X.restore()}
  {const g=X.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.45)');X.fillStyle=g;X.fillRect(0,0,W,H)}
  const bw=Math.min(W*.92,560),bh=bw*.62,k=1+Math.sin(rotT*2.2)*.03;X.save();X.translate(W/2,H/2);X.rotate(Math.sin(rotT*1.4)*.05);X.scale(k,k);
- win('scroll',-bw/2,-bh/2,bw,bh);const fs=bw*.105;txt('Поверни',0,-fs*.62,fs,'#5a2a0a',{st:'rgba(255,240,205,.85)',lw:fs*.14});txt('телефон',0,fs*.62,fs,'#5a2a0a',{st:'rgba(255,240,205,.85)',lw:fs*.14});X.restore()}
+ win('plaque',-bw/2,-bh/2,bw,bh);const fs=bw*.105;txt('Поверни',0,-fs*.62,fs,'#5a2a0a',{st:'rgba(255,240,205,.85)',lw:fs*.14});txt('телефон',0,fs*.62,fs,'#5a2a0a',{st:'rgba(255,240,205,.85)',lw:fs*.14});X.restore()}
 // тестовый интерфейс
 Object.defineProperty(G,'busy',{get:()=>G._busy>0});Object.defineProperty(G,'scene',{get:()=>scene});
 G.go=n=>go(n);G.S=SV;G.pg=(x,y)=>({x:OX+x*S,y:OY+y*S});G.btns=()=>UI.map(b=>({id:b.id,x:b.x,y:b.y}));G.fps=()=>fpsA;

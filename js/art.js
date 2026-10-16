@@ -1,7 +1,7 @@
 'use strict';
 // ===== Рисованная графика: всё из нарисованных спрайтов (окна 9-slice, кнопки-доски и компас, дублоны, ядра, тарелки, частицы) =====
 const UA={};function ua(n){const i=new Image();i.src='assets/ui/'+n+'.png';UA[n]=i;return i}
-['coin','plank','compass','frame','scroll','bubble','shadow','tick','redx','lock','logo_plaque','house_red','house_blue','house_green','vase','vase_broken','pie','box','cones','acorns','cup_red','cup_blue','cup_green','shelf','card'].forEach(ua);
+['coin','plank','compass','sign','plaque','pryanik','gframe','bubble','shadow','tick','redx','lock','logo_plaque','house_red','house_blue','house_green','vase','vase_broken','pie','box','cones','acorns','cup_red','cup_blue','cup_green','shelf','card'].forEach(ua);
 const SPL=[];for(let i=0;i<7;i++)SPL.push(ua('p_splash'+i));
 const okI=i=>i&&i.complete&&i.naturalWidth>0;
 const GREY={};function grey(n){if(GREY[n])return GREY[n];const i=UA[n];if(!okI(i))return null;const c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const g=c.getContext('2d');g.drawImage(i,0,0);
@@ -10,15 +10,18 @@ function dimg(n,x,y,w,h,o){o=o||{};const i=o.grey?grey(n):UA[n];if(!i||(i.comple
 function spr(n,x,y,h,o){o=o||{};const i=UA[n];if(!okI(i))return 0;const w=h*i.naturalWidth/i.naturalHeight;X.save();X.translate(x,y);if(o.rot)X.rotate(o.rot);if(o.a!=null)X.globalAlpha*=o.a;if(o.sc)X.scale(o.sc,o.sc);
  if(o.glow){X.save();X.globalCompositeOperation='lighter';X.globalAlpha*=.25*o.glow;X.drawImage(i,-w*.6,-h*.6,w*1.2,h*1.2);X.restore()}
  if(o.dark)X.filter='brightness('+o.dark+') saturate(.7)';dimg(n,-w/2,-h/2,w,h,{grey:o.grey});X.restore();return w}
-function nine(n,x,y,w,h,l,t,r,b,flip,cap){if(X.globalAlpha>=.05){FB.c.push({n:NTAG||n,b:lbox(x,y,x+w,y+h)});if(AUD)AUD.c.push({n:NTAG||n,b:tbox(x,y,x+w,y+h)})}const i=UA[n];if(!okI(i))return;const iw=i.naturalWidth,ih=i.naturalHeight;const k=Math.min(w/iw,h/ih,cap||1.6);
+function nine(n,x,y,w,h,l,t,r,b,flip,cap){const i=UA[n];const iw=i&&i.naturalWidth||100,ih=i&&i.naturalHeight||100;const k=Math.min(w/iw,h/ih,cap||1.6);const IN=INS[n];let ib=null;if(IN){const m=3;ib=[x+IN[0]*iw*k+m,y+IN[1]*ih*k+m,x+w-IN[2]*iw*k-m,y+h-IN[3]*ih*k-m]}
+ if(X.globalAlpha>=.05){FB.c.push({n:NTAG||n,b:lbox(x,y,x+w,y+h),in:ib&&lbox(...ib)});if(AUD)AUD.c.push({n:NTAG||n,b:tbox(x,y,x+w,y+h),in:ib&&tbox(...ib)})}if(!okI(i))return;
  const sx=[0,l*iw,iw-r*iw,iw],sy=[0,t*ih,ih-b*ih,ih],dx=[0,l*iw*k,w-r*iw*k,w],dy=[0,t*ih*k,h-b*ih*k,h];
  X.save();X.translate(x,y);if(flip){X.translate(w,0);X.scale(-1,1)}
  if(n==='bubble'){X.drawImage(i,0,0,w,h);X.restore();return}// облачко: целиком, без нарезки — бугорки не размазываются
  for(let a=0;a<3;a++)for(let c=0;c<3;c++){const sw=sx[c+1]-sx[c],sh=sy[a+1]-sy[a],ddw=dx[c+1]-dx[c],ddh=dy[a+1]-dy[a];if(sw>0&&sh>0&&ddw>0&&ddh>0)X.drawImage(i,sx[c],sy[a],sw,sh,dx[c]-.5,dy[a]-.5,ddw+1,ddh+1)}
  X.restore()}
-const SL={frame:[.2,.26,.2,.26,1.3],scroll:[.2,.2,.2,.2,1.2],bubble:[.3,.3,.3,.42,1.1],plank:[.3,.3,.3,.3,1]};
+// новые доски: резная вывеска (sign), расписная плашка (plaque), пряник (pryanik), золотая рамка (gframe); INS — светлое поле внутри (доли картинки)
+const INS={sign:[.15,.22,.15,.19],plaque:[.13,.15,.13,.25],pryanik:[.21,.22,.21,.22],gframe:[.17,.17,.17,.17]};
+const SL={sign:[.17,.24,.17,.22,.55],plaque:[.15,.17,.15,.27,.5],pryanik:[.24,.26,.24,.26,.5],gframe:[.19,.19,.19,.19,.42],frame:[.2,.26,.2,.26,1.3],scroll:[.2,.2,.2,.2,1.2],bubble:[.3,.3,.3,.42,1.1],plank:[.3,.3,.3,.3,1]};
 let NTAG=null;function win(n,x,y,w,h,flip,tag){const s=SL[n];NTAG=tag||null;nine(n,x,y,w,h,s[0],s[1],s[2],s[3],flip,s[4]);NTAG=null}
-function panel(x,y,w,h){win('frame',x,y,w,h)}
+function panel(x,y,w,h){win('plaque',x,y,w,h)}
 // ---- текст: сказочный шрифт, обводка, тень, градиент ----
 function hx(c){if(typeof c!=='string'||c[0]!=='#')return null;if(c.length===4)c='#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3];return[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]}
 function mix(a,b,k){return`rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*k)).join(',')})`}
@@ -28,7 +31,7 @@ const CAPH={};function capHalf(size){if(CAPH[size]==null){X.font=size+'px '+FONT
 let AUD=null,FB={c:[],t:[],h:[]},FBP=FB;function frameBoxes(){FBP=FB;FB={c:[],t:[],h:[]}}
 function lbox(x0,y0,x1,y1){const b=tbox(x0,y0,x1,y1);return[(b[0]-OX)/S,(b[1]-OY)/S,(b[2]-OX)/S,(b[3]-OY)/S]}
 const PADS={plank:[.08,.14,.14],scroll:[.09,.16,.16],frame:[.08,.09,.09],bubble:[.06,.07,.25],coinbtn:[.15,.15,.15],cell:[.06,.06,.06]};
-function innerOf(c){const b=c.b,w=b[2]-b[0],h=b[3]-b[1],p=PADS[c.n]||[.07,.1,.1];const px=Math.max(4,Math.min(w*p[0],h*.55));return[b[0]+px,b[1]+h*p[1],b[2]-px,b[3]-h*p[2]]}
+function innerOf(c){if(c.in)return c.in;const b=c.b,w=b[2]-b[0],h=b[3]-b[1],p=PADS[c.n]||[.07,.1,.1];const px=Math.max(4,Math.min(w*p[0],h*.55));return[b[0]+px,b[1]+h*p[1],b[2]-px,b[3]-h*p[2]]}
 // подгонка кегля: текст целиком внутри своего нарисованного контейнера (с полями)
 function fitK(t,x,y,w,asc,desc,al){const m=X.getTransform(),k=Math.hypot(m.a,m.b)/(DPR*S);const P=new DOMPoint(x,y-(asc-desc)/2).matrixTransform(m),lx=(P.x/DPR-OX)/S,ly=(P.y/DPR-OY)/S;
  let best=null;for(const c of FB.c){const b=c.b;if(lx>=b[0]&&lx<=b[2]&&ly>=b[1]&&ly<=b[3]&&(!best||(b[2]-b[0])*(b[3]-b[1])<(best.b[2]-best.b[0])*(best.b[3]-best.b[1])))best=c}
@@ -71,7 +74,7 @@ function drawParticles(){for(const p of PS){X.save();X.globalAlpha=Math.min(1,p.
 // ---- облачко речи: пергаментный пузырь ----
 function ovl(a,b){return Math.max(0,Math.min(a[2],b[2])-Math.max(a[0],b[0]))*Math.max(0,Math.min(a[3],b[3])-Math.max(a[1],b[1]))}
 // ===== Система пояснений: плашка-пояснение (banner) + облачко реплики. Всегда видны, крупные, не перекрывают кнопки и друг друга =====
-const MINPX=15;const HARDN=new Set(['compass','coinbtn','plank','scroll','clues','table','stmt']);function minFs(){return Math.max(17,MINPX/Math.max(.1,S))}
+const MINPX=15;const HARDN=new Set(['compass','coinbtn','plank','scroll','sign','plaque','pryanik','gframe','clues','table','stmt']);function minFs(){return Math.max(17,MINPX/Math.max(.1,S))}
 function safeRect(){const v=vis(),sf=typeof SAFE!=='undefined'?SAFE:{l:0,r:0,t:0,b:0};return[v.x0+sf.l/S+6,v.y0+sf.t/S+6,v.x0+v.w-sf.r/S-6,v.y0+v.h-sf.b/S-6]}
 function uiBoxes(){return PUI.filter(e=>e.id!=='fs'||1).map(e=>[e.x-e.w/2-4,e.y-e.h/2-4,e.x+e.w/2+4,e.y+e.h/2+4])}
 function explCost(r0,hard,skipBub){let h=0,s=0;const r=[r0[0]-10,r0[1]-10,r0[2]+10,r0[3]+10];for(const b of uiBoxes())h+=ovl(r,b);for(const b of hard)if(b)h+=ovl(r,b);
@@ -83,14 +86,14 @@ function gridSearch(bw,bh,score){const sr=safeRect();const x0=sr[0],x1r=sr[2],y1
 // --- плашка-пояснение ---
 let BAN=null;
 // плашка-пояснение; если в этот момент кто-то говорит, его реплика входит в ту же плашку (одна карточка: «кто говорит» + «почему»), чтобы два окна не спорили за место
-function bannerDims(t,tk,bad){const fs=Math.round(Math.max(26,minFs())),[x0,,x1]=safeRect();const maxW=(Math.min(H>520?800:980,x1-x0-20))*.84-fs*.8;const lh=Math.round(fs*1.22);const R=[];
+function bannerDims(t,tk,bad){const fs=Math.round(Math.max(26,minFs())),[x0,,x1]=safeRect();const maxW=(Math.min(H>520?800:980,x1-x0-20))-84-fs*.8;const lh=Math.round(fs*1.22);const R=[];
  X.font=fs+'px '+FONT;if(tk){const c=cast.find(q=>q.n===tk.who);if(c&&NAMES[c.n])R.push({s:NAMES[c.n][0],fs:Math.round(fs*.92),col:NAMES[c.n][1],st:'#fff4dc',lh});wrap(tk.text,maxW).forEach(l=>R.push({s:l,fs,col:'#2a1004',lh}));R.push({gap:Math.round(fs*.45)})}
  wrap(t,maxW).forEach(l=>R.push({s:l,fs,col:bad?'#7a1406':'#3a1a04',lh}));let tw=0,th=0;for(const r of R){if(r.gap){th+=r.gap;continue}X.font=r.fs+'px '+FONT;tw=Math.max(tw,X.measureText(r.s).width);th+=r.lh}
- const w=Math.min(x1-x0,(tw+fs*.8)/.84),h=(th+fs*.5)/.82;return{fs,R,th,w,h}}
+ const w=Math.min(x1-x0,tw+fs*.8+84),h=th+fs*.2+66;return{fs,R,th,w,h}}
 function drawBanner(){const b=typeof LV!=='undefined'&&LV&&String(scene)[0]==='l'&&LV.banner;if(!b){BAN=null;return null}const tk=talk&&LINES[talk.k]&&!NOBUB.test(talk.k)?talk:null;const key=b.t+'|'+(tk?tk.k:'')+'|'+W+'x'+H;
  if(!BAN||BAN.key!==key||T-BAN.T>.6){const d=bannerDims(b.t,tk,b.bad);const pref=b.y||100;const p=gridSearch(d.w,d.h,(bx,by)=>{const r=[bx,by,bx+d.w,by+d.h];let[h,s]=explCost(r,[]);for(const q of FBP.h)h+=ovl(r,q.b)*.3;return[h*1e3+s*8+Math.abs(by-pref)*2+Math.abs(bx+d.w/2-640)*.6]});BAN={key,T,d,x:p[0],y:p[1],tk:!!tk}}
- const{d,x,y}=BAN;X.save();X.globalAlpha=Math.min(1,.15+ease(Math.min(1,(T-b.t0)*4)));win(b.bad?'frame':'scroll',x,y,d.w,d.h,false,'banner');AUDBUB=1;
- let yy=y+d.h/2-d.th/2;for(const r of d.R){if(r.gap){yy+=r.gap;continue}txt(r.s,x+d.w/2,yy+r.lh/2,r.fs,r.col,{st:r.st||'rgba(255,244,220,.85)',lw:Math.max(3,r.fs*.16),noFit:1,_seg:1});yy+=r.lh}
+ const{d,x,y}=BAN;X.save();X.globalAlpha=Math.min(1,.15+ease(Math.min(1,(T-b.t0)*4)));win('plaque',x,y,d.w,d.h,false,'banner');AUDBUB=1;
+ const ib=FB.c[FB.c.length-1]&&FB.c[FB.c.length-1].in;const bcx=ib?(ib[0]+ib[2])/2:x+d.w/2;let yy=ib?(ib[1]+ib[3])/2-d.th/2:y+d.h/2-d.th/2;for(const r of d.R){if(r.gap){yy+=r.gap;continue}txt(r.s,bcx,yy+r.lh/2,r.fs,r.col,{st:r.st||'rgba(255,244,220,.85)',lw:Math.max(3,r.fs*.16),noFit:1,_seg:1});yy+=r.lh}
  AUDBUB=0;X.restore();if(BAN.tk&&talk){talk.box=[x,y,d.w,d.h];talk.D={fs:d.fs};talk.dk=null}return BAN.tk?'merged':[x,y,x+d.w,y+d.h]}
 // --- облачко ---
 function bubbleDims(c,fs,maxW){const lh=Math.round(fs*1.23),nfs=Math.round(fs*.92);X.font=fs+'px '+FONT;const L=wrap(talk.text,maxW);const tw=Math.max(...L.map(l=>X.measureText(l).width));X.font=nfs+'px '+FONT;const nw=c?X.measureText(NAMES[c.n][0]).width:0;

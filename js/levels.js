@@ -36,7 +36,7 @@ function boxSolve(pulled){return boxWorlds().filter(p=>p[2]===BX.indexOf(pulled)
 function logo(x,y,w){const lg=UA.logo_plaque;let h=w*.42;if(okI(lg)){h=w*lg.naturalHeight/lg.naturalWidth;X.drawImage(lg,x-w/2,y-h/2,w,h)}FB.c.push({n:'plank',b:lbox(x-w*.4,y-h*.32,x+w*.4,y+h*.32)});txt('Ярмарка',x,y-h*.13,w*.11,'#ffe28a',{st:'#5a2208',lw:w*.016});txt('подсказок',x,y+h*.14,w*.11,'#ffe28a',{st:'#5a2208',lw:w*.016})}
 SC.title={enter(){cast=[{n:'lyova',x:150,y:705,h:330},{n:'nika',x:1060,y:705,h:270},{n:'barsik',x:1215,y:705,h:250}]},
  draw(){bgDraw('title');motes(45);drawCast();logo(610,175+Math.sin(T*1.5)*4,580);
-  win('scroll',380,330,460,80);ink('Урок 638 · Логика: кто есть кто',610,370,25)},
+  win('sign',370,318,480,104);ink('Урок 638 · Логика: кто есть кто',610,370,25)},
  ui(){btn('play',610,540,300,90,'Играть!',()=>{go('intro')},{pulse:1,fs:46})}};
 // ---------- вступление ----------
 SC.intro={enter(){cast=[{n:'lyova',x:210,y:705,h:340},{n:'nika',x:900,y:705,h:300},{n:'barsik',x:1110,y:705,h:290}];
@@ -53,7 +53,7 @@ function mapLayout(){const v=vis(),si=typeof SAFE!=='undefined'?SAFE.l/Math.max(
 SC.map={enter(){cast=[{n:'nika',x:80,y:712,h:200}];if(!SV.seenMap){SV.seenMap=1;save();run(()=>say('map'))}},
  draw(){bgDraw('title',.25);motes(45);const{v,safe,pts}=mapLayout();
   pts.forEach(([x,y,i,k])=>{const op=i<SV.open;coinTok(x,y,6.5*MK,{rot:k*.7,a:op?.95:.7,dark:op?0:.5})});
-  win('scroll',490,14,300,66);ink('Карта ярмарки',640,47,34);
+  win('sign',470,6,340,92);ink('Карта ярмарки',640,52,34);
   const sc=SV.secret.reduce((a,b)=>a+b,0),rx=Math.min(1245,v.x0+v.w-safe)-260;win('plank',rx,22,260,46);coinTok(rx+27,45,11,{glow:sc?1:0});txt('Тайные звёзды: '+sc+'/4',rx+142,45,19,'#fff0c8',{st:'#2a1004',lw:4,maxW:200});
   MP.forEach((p,i)=>{const open=i<SV.open,cur=i===SV.open-1;const bob=open?Math.sin(T*1.6+i)*4:0;X.save();X.translate(p[0],p[1]);X.scale(MK,MK);
    spr('shadow',0,50,26,{a:.35});spr(MAPI[i],0,bob,110,{dark:open?0:.5,glow:open?(cur?1.3+Math.sin(T*4)*.4:.5):0});if(!open)spr('lock',0,bob+10,54,{a:.95});
@@ -69,13 +69,13 @@ function levelScene(n){SC['l'+n]={enter(){if(LV&&LV.n===n&&LV.resume){LV.resume=
   LV={n,r:0,mist:0,done:false,banner:null,def:DEF[n],reveal:false};DEF[n].init(LV);cast=LV.cast;run(()=>DEF[n].start(LV))},
  draw(){bgDraw('l'+n,0);motes(45);if(!LV.done)DEF[n].draw(LV);drawCast();
   if(n<5&&!SV.secret[n-1]&&!LV.done){const[sx,sy]=SECRET_POS[n-1];coinTok(sx,sy,14,{a:.45+.35*Math.sin(T*3),glow:.8+.4*Math.sin(T*3),rot:T})}},
- ui(){win('scroll',450,0,380,64);ink(LNAMES[n-1],640,32,28);for(let i=0;i<ROUNDS[n-1];i++)coinTok(640-(ROUNDS[n-1]-1)*17+i*34,82,12,{grey:i>=LV.r});
+ ui(){win('sign',450,0,380,90);ink(LNAMES[n-1],640,45,28);for(let i=0;i<ROUNDS[n-1];i++)coinTok(870+i*34,45,13,{grey:i>=LV.r});
   btn('home',74,66,84,64,'⌂',()=>{go('map')},{always:1});if(!LV.done)btn('hint',1214,58,76,64,'?',()=>{if(!G.busy)run(()=>DEF[n].hint(LV))},{fs:36});
   if(DEF[n].ui&&!LV.done)DEF[n].ui(LV);if(LV.done)endPanel(n)},
  tap(x,y){if(LV.done||G.busy)return;if(n<5&&!SV.secret[n-1]){const[sx,sy]=SECRET_POS[n-1];if(Math.hypot(x-sx,y-sy)<44){LV.resume=true;go('secret',n);return}}if(DEF[n].tap)DEF[n].tap(LV,x,y)}}}
 function banner(t,bad,y){LV.banner={t,bad,t0:T,y}}
 async function roundDone(){LV.r++;LV.banner=null;if(LV.r>=ROUNDS[LV.n-1]){LV.done=true;LV.doneT=T;const st=LV.mist===0?3:LV.mist<=2?2:1;LV.stars=st;SV.stars[LV.n-1]=Math.max(SV.stars[LV.n-1],st);SV.open=Math.max(SV.open,Math.min(5,LV.n+1));save();cheer();const cx_=ctxNow();for(let i=0;i<3;i++)setTimeout(()=>{if(i<st&&alive(cx_)){SFX.star();burst(560+i*80,368,24,'spark',48)}},500+i*350);if(LV.n<5)await say('win');return true}return false}
-function endPanel(n){win('frame',340,110,600,430);ink(n<5?'Дело раскрыто!':'Все дела раскрыты!',640,215,40,{col:'#8a4a08'});
+function endPanel(n){win('plaque',330,110,620,420);ink(n<5?'Дело раскрыто!':'Все дела раскрыты!',640,215,40,{col:'#8a4a08'});
  for(let i=0;i<3;i++){const k=ease((T-LV.doneT-.5-i*.35)*3);star(560+i*80,320,30,i<LV.stars&&k>0,k>0?.4+.6*k:1)}
  ink(LV.mist===0?'Без единой ошибки!':'Ошибок: '+LV.mist,640,420,28);
  btn('map',520,600,200,70,'Карта',()=>go('map'),{always:1});
@@ -83,11 +83,11 @@ function endPanel(n){win('frame',340,110,600,430);ink(n<5?'Дело раскры
 // ---------- общие рисовалки ----------
 function tok(n,x,y,h,o){o=o||{};const i=UA[n]&&okI(UA[n])?UA[n]:IM[n];if(!okI(i))return;const w=h*i.naturalWidth/i.naturalHeight;X.save();X.translate(x,y);if(o.sc)X.scale(o.sc,o.sc);if(o.a!=null)X.globalAlpha*=o.a;
  if(o.glow){X.save();X.globalCompositeOperation='lighter';X.globalAlpha*=.3*o.glow;X.drawImage(i,-w*.56,-h*1.04,w*1.12,h*1.08);X.restore()}X.drawImage(i,-w/2,-h,w,h);X.restore();return w}
-function clueBox(L,P,y0){const n=P.clues.length,lh=40,h=n*lh+50,x=250,w=780;win('scroll',x,y0,w,h,false,'clues');
- P.clues.forEach((c,i)=>{const y=y0+25+lh/2+i*lh+ (h-50-n*lh)/2;const st=L.cst&&L.cst[i];ink((i+1)+'. '+c.t,x+w/2+(st!=null?18:0),y,27,{col:'#4a2208'});if(st!=null){X.save();X.font='27px '+FONT;const tw=X.measureText((i+1)+'. '+c.t).width;X.restore();spr(st?'tick':'redx',x+w/2+18-tw/2-30,y,36)}})}
+function clueBox(L,P,y0){const n=P.clues.length,lh=38,h=n*lh+92,x=250,w=780;win('sign',x,y0,w,h,false,'clues');
+ P.clues.forEach((c,i)=>{const y=y0+h*.505-(n-1)*lh/2+i*lh;const st=L.cst&&L.cst[i];ink((i+1)+'. '+c.t,x+w/2+(st!=null?18:0),y,26,{col:'#4a2208'});if(st!=null){X.save();X.font='27px '+FONT;const tw=X.measureText((i+1)+'. '+c.t).width;X.restore();spr(st?'tick':'redx',x+w/2+18-tw/2-30,y,36)}})}
 function nameTag(n,x,y,fs){X.font=(fs||22)+'px '+FONT;const w=Math.max(110,X.measureText(PN[n]).width+44);win('plank',x-w/2,y-20,w,40);txt(PN[n],x,y,fs||22,'#fff0c8',{st:'#2a1004',lw:4})}
 // ---------- задачи на расстановку (домики / дежурство) ----------
-function assignLevel(n,o){DEF[n]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'nika',x:1215,y:712,h:240,flip:1}]},
+function assignLevel(n,o){DEF[n]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'nika',x:1215,y:712,h:240}]},
  setR(L){L.P=o.P[L.r];L.pos={};L.sel=null;L.cst=null;L.banner=null;L.solved=false},
  async start(L){this.setR(L);await say(o.intro);await say(L.P.k)},
  slotXY(i){return[o.sx[i],o.sy]},trayXY(j){return[470+j*170,640]},
@@ -108,18 +108,18 @@ function assignLevel(n,o){DEF[n]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{
  // для теста: тапы для правильного ответа и для ошибки
  taps(L,good){const P=L.P;const s=sols(P)[0];let p=s;if(!good){p=perms3().find(q=>{const d={};P.who.forEach((w,i)=>d[w]=q[i]);return!P.clues.every(c=>c.f(d))})}
   const out=[],pos={...L.pos};P.who.forEach((w,j)=>{if(pos[w]===p[j])return;let tx,ty;if(pos[w]!=null){[tx,ty]=this.slotXY(pos[w]);ty+=o.py}else[tx,ty]=this.trayXY(j);out.push([tx,ty-50]);const[sx,sy]=this.slotXY(p[j]);out.push([sx,sy-60]);const prev=Object.keys(pos).find(k=>pos[k]===p[j]);if(prev)delete pos[prev];pos[w]=p[j]});return out}};levelScene(n)}
-assignLevel(1,{P:P1,intro:'l1i',hint:'l1h',sx:[400,640,880],sy:390,sw:230,sh:220,py:100,fixMsg:'Поменяй жильцов местами.',
+assignLevel(1,{P:P1,intro:'l1i',hint:'l1h',sx:[400,640,880],sy:408,sw:230,sh:220,py:100,fixMsg:'Поменяй жильцов местами.',
  drawSlot(i,x,y,L){spr(['house_red','house_blue','house_green'][i],x,y,220);coinTok(x-92,y+72,26);txt(String(i+1),x-92,y+72,34,'#fff3c0',{st:'#3a1a06',lw:5})}});
 const DAYS=['Вторник','Среда','Четверг'];
-assignLevel(3,{P:P3,intro:'l3i',hint:'l3h',sx:[400,640,880],sy:400,sw:220,sh:210,py:92,fixMsg:'Поменяй дежурных местами.',
+assignLevel(3,{P:P3,intro:'l3i',hint:'l3h',sx:[400,640,880],sy:418,sw:220,sh:210,py:92,fixMsg:'Поменяй дежурных местами.',
  drawSlot(i,x,y,L){spr('card',x,y,200);win('plank',x-92,y-100,184,50);txt(DAYS[i],x,y-75,28,'#fff0c8',{st:'#2a1004',lw:4})}});
 // ---------- УРОВЕНЬ 2: кто солгал ----------
 const SX2=[420,640,860];
-DEF[2]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'nika',x:1215,y:712,h:240,flip:1}]},
+DEF[2]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'nika',x:1215,y:712,h:240}]},
  setR(L){L.P=P2[L.r];L.tried={};L.banner=null;L.solved=false},
  async start(L){this.setR(L);await say('l2i');await say(L.P.k)},
- draw(L){const P=L.P;if(!P)return;win('scroll',330,92,620,72,false,'clues');ink(P.q,640,128,27,{col:'#4a2208'});
-  P.who.forEach((w,i)=>{const x=SX2[i];win('bubble',x-108,178,216,150,i===2,'stmt');X.font='26px '+FONT;const Ls=[PN[w]+':',...wrap('«'+P.say[i]+'»',170)];Ls.forEach((l,k)=>txt(l,x,238+(k-(Ls.length-1)/2)*29,k?25:23,k?'#2a1004':'#8a3a0a',{st:'rgba(255,244,220,.7)',lw:3}));
+ draw(L){const P=L.P;if(!P)return;win('pryanik',310,90,660,100,false,'clues');ink(P.q,640,140,26,{col:'#4a2208'});
+  P.who.forEach((w,i)=>{const x=SX2[i];win('bubble',x-108,194,216,150,i===2,'stmt');X.font='26px '+FONT;const Ls=[PN[w]+':',...wrap('«'+P.say[i]+'»',170)];Ls.forEach((l,k)=>txt(l,x,254+(k-(Ls.length-1)/2)*29,k?25:23,k?'#2a1004':'#8a3a0a',{st:'rgba(255,244,220,.7)',lw:3}));
    const tr=L.tried[w];tok(w,x,590,200,{a:tr?.6:1,glow:L.solved&&i===liarSol(P)[0]?1.4:0});if(tr)spr('redx',x+56,420,60);if(L.solved&&i===liarSol(P)[0])spr('tick',x+56,420,64)});
   if(L.P.ev)spr(L.P.ev,1010,560,90)},
  tap(L,x,y){if(L.solved)return;const P=L.P;P.who.forEach((w,i)=>{if(Math.abs(x-SX2[i])<85&&y>380&&y<620&&!L.tried[w])run(()=>this.pick(L,i))})},
@@ -131,12 +131,12 @@ DEF[2]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'nika',x:1215,y:712,h:24
 // ---------- УРОВЕНЬ 4: коробки с неверными наклейками ----------
 // rounds: r0 — откуда тянуть; r1/r2 — достали предмет, найди коробку со смесью
 const R4=[{k:'l4r0',ask:'pull'},{k:'l4r1',ask:'mix',pulled:'cones'},{k:'l4r2',ask:'mix',pulled:'acorns'}];
-DEF[4]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'barsik',x:1210,y:712,h:240,flip:1}]},
+DEF[4]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'barsik',x:1210,y:712,h:240}]},
  setR(L){L.R=R4[L.r];L.ord=shuffle([0,1,2]);L.tried={};L.banner=null;L.solved=false;L.show=null},
  async start(L){this.setR(L);await say('l4i');await say(L.R.k)},
  bx(L,lab){return[[400,640,880][L.ord.indexOf(lab)],430]},
  answer(L){const R=L.R;if(R.ask==='pull')return 2;const w=boxSolve(R.pulled)[0];return w.indexOf(2)},// наклейка коробки со смесью
- draw(L){const R=L.R;if(!R)return;win('scroll',290,92,700,72,false,'clues');ink(R.ask==='pull'?'Все наклейки неверные!':'Достали '+(R.pulled==='cones'?'шишку':'жёлудь')+'. Где смесь?',640,128,28,{col:'#4a2208'});
+ draw(L){const R=L.R;if(!R)return;win('pryanik',290,90,700,100,false,'clues');ink(R.ask==='pull'?'Все наклейки неверные!':'Достали '+(R.pulled==='cones'?'шишку':'жёлудь')+'. Где смесь?',640,140,27,{col:'#4a2208'});
   const world=R.pulled?boxSolve(R.pulled)[0]:null;
   for(let lab=0;lab<3;lab++){const[x,y]=this.bx(L,lab);spr('box',x,y,230,{a:L.tried[lab]?.65:1});win('plank',x-104,y+6,208,84);X.font='27px '+FONT;const Ls=wrap(BXT[BX[lab]],170);Ls.forEach((l,k)=>txt(l,x,y+48+(k-(Ls.length-1)/2)*30,27,'#fff0c8',{st:'#2a1004',lw:4}));
    if(L.tried[lab])spr('redx',x+70,y-80,56);
@@ -155,15 +155,15 @@ DEF[4]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260},{n:'barsik',x:1210,y:712,h:
  info(L){return{r:L.r,ans:this.answer(L)}},
  taps(L,good){const a=this.answer(L);const lab=good?a:[0,1,2].find(j=>j!==a&&!L.tried[j]);return[this.bx(L,lab)]}};levelScene(4);
 // ---------- УРОВЕНЬ 5: большая таблица «да / нет» ----------
-const TB={x0:390,y0:342,cw:136,ch:94};function cellC(r,c){return[TB.x0+c*TB.cw+TB.cw/2,TB.y0+r*TB.ch+TB.ch/2]}
+const TB={x0:390,y0:368,cw:136,ch:92};function cellC(r,c){return[TB.x0+c*TB.cw+TB.cw/2,TB.y0+r*TB.ch+TB.ch/2]}
 DEF[5]={init(L){L.cast=[{n:'lyova',x:70,y:712,h:260}]},
  setR(L){L.P=P5[L.r];L.m=[null,null,null];L.cst=null;L.banner=null;L.solved=false},
  async start(L){this.setR(L);await say('l5i');await say(L.P.k)},
  draw(L){const P=L.P;if(!P)return;clueBox(L,P,96);
-  win('frame',TB.x0-170,TB.y0-72,3*TB.cw+190,3*TB.ch+112,false,'table');
+  
   P.cols.forEach((c,j)=>{const[x]=cellC(0,j);txt(c,x,TB.y0-24,26,'#5a2a0a',{st:'rgba(255,240,205,.85)',lw:4,maxW:132})});
   P.rows.forEach((rw,i)=>{const[,y]=cellC(i,0);if(P.kind==='cups')spr(P.who[i],TB.x0-110,y-4,66);else tok(P.who[i],TB.x0-118,y+40,84);txt(rw,TB.x0-48,y+26,20,'#5a2a0a',{st:'rgba(255,240,205,.85)',lw:4,maxW:96});
-   for(let j=0;j<3;j++){const[x,y2]=cellC(i,j);win('frame',x-TB.cw*.46,y2-TB.ch*.45,TB.cw*.92,TB.ch*.9,false,'cell');
+   for(let j=0;j<3;j++){const[x,y2]=cellC(i,j);win('gframe',x-TB.cw*.47,y2-TB.ch*.47,TB.cw*.94,TB.ch*.94,false,'cell');
     const on=L.m[i]===j,off=!on&&(L.m[i]!=null||L.m.includes(j));if(on)spr('tick',x,y2,62,{sc:1+.06*Math.sin(T*4)});else if(off)spr('redx',x,y2,46,{a:.75})}});
   // справа: полки с чашками или возраст
   const sx=1040;if(P.kind==='cups'){for(let s=0;s<3;s++){const y=330+s*105;spr('shelf',sx,y+30,40);const i=L.m.indexOf(s);if(i>=0)spr(P.who[i],sx,y-8,64)}}
@@ -184,11 +184,11 @@ const SECRETS=[{k:'s1',o:['3','6','2'],a:0,why:'По одному утёнку �
  {k:'s4',o:['2013','2014','2015'],a:2,why:'Соня младше всех — значит, родилась позже всех: в 2015 году.'}];
 let SEC=null;
 SC.secret={enter(n){SEC={n,i:n-1,why:null};cast=[{n:'barsik',x:150,y:712,h:250}];run(async()=>{await say('sec');await say(SECRETS[n-1].k)})},
- draw(){bgDraw('l'+SEC.n,.35);motes(45);const s=SECRETS[SEC.i];win('frame',260,50,760,500);ink('Тайная комната',640,130,44,{col:'#8a4a08'});
-  para(LINES[s.k].t,640,215,600,27);
-  if(SEC.why)para(SEC.why,640,450,600,24,{col:SEC.ok?'#1a5a10':'#8a1a08'});
+ draw(){bgDraw('l'+SEC.n,.35);motes(45);const s=SECRETS[SEC.i];win('plaque',240,40,800,560);ink('Тайная комната',640,150,40,{col:'#8a4a08'});
+  para(LINES[s.k].t,640,225,560,26);
+  if(SEC.why)para(SEC.why,640,445,560,23,{col:SEC.ok?'#1a5a10':'#8a1a08'});
   if(SEC.ok)coinTok(640,340,56,{sc:1+.1*Math.sin(T*5),glow:1.6,rot:Math.sin(T*3)*.3});drawCast()},
- ui(){const s=SECRETS[SEC.i];if(!SEC.ok)s.o.forEach((o,i)=>btn('o'+i,430+i*210,345,170,70,o,()=>ansS(i),{fs:o.length>3?28:40}));
+ ui(){const s=SECRETS[SEC.i];if(!SEC.ok)s.o.forEach((o,i)=>btn('o'+i,440+i*200,340,170,70,o,()=>ansS(i),{fs:o.length>3?28:40}));
   btn('back',1170,50,170,60,'‹ Назад',()=>go('l'+SEC.n),{always:1,fs:28})}};
 function ansS(i){if(G.busy)return;const s=SECRETS[SEC.i];run(async()=>{if(i!==s.a){SFX.bad();oops('barsik');SEC.why=s.why;await say('secw');return}
  SEC.ok=1;SEC.why=s.why;SV.secret[SEC.i]=1;save();SFX.star();burst(640,330,50,'spark',48);cheer();await say('secok');await wait(600);go('l'+SEC.n)})}
@@ -196,8 +196,8 @@ function ansS(i){if(G.busy)return;const s=SECRETS[SEC.i];run(async()=>{if(i!==s.
 SC.fin={enter(){cast=[{n:'lyova',x:200,y:705,h:340},{n:'nika',x:900,y:705,h:300},{n:'barsik',x:1110,y:705,h:290}];
  run(async()=>{cheer();await say('fin');await say('l5end')})},
  draw(){bgDraw('title',.05);motes(45);if(Math.random()<.2)burst(rnd(100,1180),rnd(80,300),8,'spark',48,.6);if(Math.random()<.01)cheer();
-  win('scroll',340,20,600,120);ink('Все дела раскрыты!',640,80,50,{col:'#7a3a0a'});const st=SV.stars.reduce((a,b)=>a+b,0);
-  win('plank',340,150,600,66);txt('Звёзд: '+st+' из 15 · тайных: '+SV.secret.reduce((a,b)=>a+b,0)+' из 4',640,183,24,'#fff0c8',{st:'#2a1004',lw:4});
+  win('sign',330,10,620,150);ink('Все дела раскрыты!',640,85,46,{col:'#7a3a0a'});const st=SV.stars.reduce((a,b)=>a+b,0);
+  win('plank',340,166,600,66);txt('Звёзд: '+st+' из 15 · тайных: '+SV.secret.reduce((a,b)=>a+b,0)+' из 4',640,199,24,'#fff0c8',{st:'#2a1004',lw:4});
   ['bear','bunny','owl'].forEach((w,i)=>tok(w,470+i*130,560+Math.abs(Math.sin(T*3+i))*-14,150));drawCast()},
  ui(){btn('map',1150,60,160,60,'Карта',()=>go('map'),{always:1,fs:28})}};
 // ---------- API для тестов ----------
