@@ -117,10 +117,19 @@ function drawCast(){cast.forEach(c=>{c.y=gY()});cast.forEach(heroFit);separate()
 // ---- сцены ----
 const SC={};let scene='title',SCN=null;
 function go(n,arg){try{if(typeof LV!=='undefined'&&LV&&n!=='secret'&&n!=='l'+LV.n)LV.resume=false}catch(e){}scene=n;SCN=SC[n];fade=1;stopTalk();PS.length=0;SCN.enter&&SCN.enter(arg)}
-C.addEventListener('pointerdown',e=>{if(PORTRAIT())return;ac();const x=(e.clientX-VVX-OX)/S,y=(e.clientY-VVY-OY)/S;PX=x;PY=y;
- for(let i=UI.length-1;i>=0;i--){const b=UI[i];if(Math.abs(x-b.x)<b.w/2+6&&Math.abs(y-b.y)<b.h/2+6){if(b.dis)return;if(G._busy&&!b.always){if(b.id==='hint'&&typeof LV!=='undefined'&&LV&&!LV.done&&typeof DEF!=='undefined'&&DEF[LV.n]&&DEF[LV.n].hint){SFX.click();stopTalk();LV.reveal=true;DEF[LV.n].hint(LV)}return}SFX.click();b.fn();return}}
- if(talk&&talk.box&&skipTalk){const[bx,by,bw,bh]=talk.box;if(x>bx&&x<bx+bw&&y>by&&y<by+bh){skipTalk();return}}
- if(SCN&&SCN.tap)SCN.tap(x,y)});
+// ввод: блокируется только на время «победной» сцены раунда (LV.lock/SEC.lock), голос может говорить, пока ребёнок играет.
+// хит-зона кнопок — не меньше 56 css px; из нескольких попаданий берётся ближайшая; случайный повторный тап (<220 мс, то же место) гасится
+function locked(){if(scene[0]==='l'&&typeof LV!=='undefined'&&LV)return!!(LV.lock||LV.done);if(scene==='secret'&&typeof SEC!=='undefined'&&SEC)return!!SEC.lock;return G._busy>0}
+G.locked=locked;let _lastTap={t:0,x:-99,y:-99};
+C.addEventListener('pointerdown',e=>{if(PORTRAIT())return;e.preventDefault();ac();const x=(e.clientX-VVX-OX)/S,y=(e.clientY-VVY-OY)/S;PX=x;PY=y;
+ const now=performance.now();if(now-_lastTap.t<170&&Math.hypot(e.clientX-_lastTap.x,e.clientY-_lastTap.y)<24)return;_lastTap={t:now,x:e.clientX,y:e.clientY};
+ const mh=28/S;let best=null,bd=1e9;
+ for(let i=UI.length-1;i>=0;i--){const b=UI[i];const dx=Math.abs(x-b.x),dy=Math.abs(y-b.y);if(dx<Math.max(b.w/2+6,mh)&&dy<Math.max(b.h/2+6,mh)){const inside=dx<b.w/2+6&&dy<b.h/2+6;const d=(inside?0:1e5)+Math.hypot(dx,dy);if(d<bd){bd=d;best=b}}}
+ if(best){const b=best;if(b.dis)return;if(locked()&&!b.always)return;SFX.click();b.fn();return}
+ if(talk&&talk.box&&skipTalk){const[bx,by,bw,bh]=talk.box;if(x>bx&&x<bx+bw&&y>by&&y<by+bh)skipTalk()}
+ if(SCN&&SCN.tap)SCN.tap(x,y)},{passive:false});
+['dblclick','contextmenu','gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 C.addEventListener('pointermove',e=>{PX=(e.clientX-VVX-OX)/S;PY=(e.clientY-VVY-OY)/S});
 let last=performance.now(),fpsA=60;
 const TOUCH=(('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia('(pointer:coarse)').matches;const PORTRAIT=()=>TOUCH&&H>W*1.05;
